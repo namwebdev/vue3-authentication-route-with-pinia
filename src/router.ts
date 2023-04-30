@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Home from "./views/Home.vue";
 import Login from "./views/Login.vue";
 import Products from "./views/Product/Index.vue";
+import CreateProduct from "./views/Product/Create.vue";
 import Admin from "./views/Admin.vue";
 import NotFound from "./views/NotFound.vue";
 import { role, useAuthStore } from "./store/auth";
@@ -20,6 +21,9 @@ const routes = [
     component: Products,
     name: "Products",
     meta: { requireAuth: true },
+    children: [
+      { path: "create", component: CreateProduct, name: "CreateProduct" },
+    ],
   },
   {
     path: "/admin",
