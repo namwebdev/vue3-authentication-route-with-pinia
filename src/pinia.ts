@@ -9,10 +9,10 @@ pinia.use(({ store }) => {
   store.router = markRaw(router);
 
   store.$onAction(({ store, name, args, after, onError }) => {
-    console.log(store, name, args);
+    // console.log("onAction: ", store, name, args);
 
     after((result) => {
-      console.log("pinia after action ", store);
+      // console.log("pinia after action ", store);
     });
 
     onError((error) => {

@@ -1,14 +1,15 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Home from "./views/Home.vue";
 import Login from "./views/Login.vue";
+import SignUp from "./views/SignUp.vue";
 import Products from "./views/Product/Index.vue";
 import CreateProduct from "./views/Product/Create.vue";
-import Admin from "./views/Admin.vue";
 import NotFound from "./views/NotFound.vue";
-import { role, useAuthStore } from "./store/auth";
+import { useAuthStore } from "./store/auth";
 
 export const RouteName = {
   Login: "Login",
+  SignUp: "SignUp",
   Home: "Home",
   Admin: "Admin",
 } as const;
@@ -16,6 +17,7 @@ export const RouteName = {
 const routes = [
   { path: "/", component: Home, name: RouteName.Home },
   { path: "/login", component: Login, name: RouteName.Login },
+  { path: "/sign-up", component: SignUp, name: RouteName.SignUp },
   {
     path: "/products",
     component: Products,
@@ -24,12 +26,6 @@ const routes = [
     children: [
       { path: "create", component: CreateProduct, name: "CreateProduct" },
     ],
-  },
-  {
-    path: "/admin",
-    component: Admin,
-    name: RouteName.Admin,
-    meta: { requireAuth: true, isAdmin: true },
   },
   {
     path: "/:catchAll(.*)",
@@ -43,22 +39,30 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  if (!to.meta.requireAuth && to.name !== RouteName.Login) return next();
+function isAuthPage(page: string) {
+  const authPageNames = [RouteName.Login, RouteName.SignUp] as string[];
+  if (authPageNames.includes(page)) return true;
+  return false;
+}
+
+router.beforeEach(async (to, from, next) => {
+  if (!useAuthStore().user) await useAuthStore().getInfo();
+
+  if (!to.meta.requireAuth && !isAuthPage(to.name as string)) return next();
 
   const { user } = useAuthStore();
-  const isAdminUser = user?.role === role.admin;
+  // const isAdminUser = false;
 
-  if (to.name === RouteName.Login) {
+  if (isAuthPage(to.name as string)) {
     if (!user) return next();
-    if (isAdminUser) return next({ name: RouteName.Admin });
+    // if (isAdminUser) return next({ name: RouteName.Admin });
     return next({ name: RouteName.Home });
   }
 
-  if (to.meta.isAdmin) {
-    if (isAdminUser) return next();
-    return next({ name: RouteName.Home });
-  }
+  // if (to.meta.isAdmin) {
+  //   if (isAdminUser) return next();
+  //   return next({ name: RouteName.Home });
+  // }
 
   if (user) return next();
 
